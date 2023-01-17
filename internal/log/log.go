@@ -11,58 +11,63 @@ type Field = zap.Field
 
 var logger *zap.Logger
 
-const module = "aryaframe"
-
-func Init() error {
-	debug := true
-	logPath := "./log/"
-	hook := lumberjack.Logger{
-		Filename:   logPath + "log.log", // 日志文件路径
-		MaxSize:    128,                 // 每个日志文件保存的大小 单位:M
-		MaxAge:     7,                   // 文件最多保存多少天
-		MaxBackups: 30,                  // 日志文件最多保存多少个备份
-		Compress:   false,               // 是否压缩
-	}
-	encoderConfig := zapcore.EncoderConfig{
-		MessageKey:     "msg",
-		LevelKey:       "level",
+func getEncoderConf() zapcore.EncoderConfig {
+	return zapcore.EncoderConfig{
 		TimeKey:        "time",
-		NameKey:        "logger",
-		CallerKey:      "file",
+		LevelKey:       "level",
+		NameKey:        "name",
+		CallerKey:      "line",
+		MessageKey:     "msg",
+		FunctionKey:    "func",
 		StacktraceKey:  "stacktrace",
 		LineEnding:     zapcore.DefaultLineEnding,
 		EncodeLevel:    zapcore.LowercaseLevelEncoder,
-		EncodeTime:     zapcore.ISO8601TimeEncoder,
+		EncodeTime:     zapcore.TimeEncoderOfLayout("2006-01-02 15:04:05.000"),
 		EncodeDuration: zapcore.SecondsDurationEncoder,
 		EncodeCaller:   zapcore.FullCallerEncoder,
 		EncodeName:     zapcore.FullNameEncoder,
 	}
-	// 设置日志级别
+}
+
+func getWriteSyncers() []zapcore.WriteSyncer {
+	var writer []zapcore.WriteSyncer
+	logPath := "./log/"
+	writer = append(writer, zapcore.AddSync(&lumberjack.Logger{
+		Filename:   logPath + "log.log", // 日志文件路径
+		MaxSize:    128,                 // 每个日志文件保存的大小 单位:M
+		MaxAge:     7,                   // 文件最多保存多少天
+		MaxBackups: 30,                  // 日志文件最多保存多少个备份
+		LocalTime:  true,                // 本地时区
+		Compress:   false,               // 是否压缩
+	}))
+	writer = append(writer, os.Stdout)
+
+	return writer
+}
+
+func getLoggerLevel() zap.AtomicLevel {
 	atomicLevel := zap.NewAtomicLevel()
 	atomicLevel.SetLevel(zap.DebugLevel)
-	var writes = []zapcore.WriteSyncer{zapcore.AddSync(&hook)}
-	// 如果是开发环境，同时在控制台上也输出
-	if debug {
-		writes = append(writes, zapcore.AddSync(os.Stdout))
-	}
+	return atomicLevel
+}
+
+func getLoggerOption() []zap.Option {
+	var opts []zap.Option
+	opts = append(opts, zap.AddCaller())
+	opts = append(opts, zap.AddCallerSkip(1))
+	opts = append(opts, zap.Development())
+	return opts
+}
+
+func Init() error {
 	core := zapcore.NewCore(
-		zapcore.NewJSONEncoder(encoderConfig),
-		zapcore.NewMultiWriteSyncer(writes...),
-		atomicLevel,
+		zapcore.NewJSONEncoder(getEncoderConf()),
+		zapcore.NewMultiWriteSyncer(getWriteSyncers()...),
+		getLoggerLevel(),
 	)
 
-	// 开启开发模式，堆栈跟踪
-	caller := zap.AddCaller()
-	// 调用栈 -1
-	callerSkip := zap.AddCallerSkip(1)
-	// 开启文件及行号
-	development := zap.Development()
-
-	// 设置初始化字段
-	field := zap.Fields(zap.String("appName", module))
-
 	// 构造日志
-	logger = zap.New(core, caller, development, field, callerSkip)
+	logger = zap.New(core, getLoggerOption()...)
 	logger.Info("log init success.")
 
 	return nil
@@ -81,26 +86,21 @@ func ErrorF(err error) Field {
 }
 
 func Debug(msg string, fields ...Field) {
-	fields = append([]Field{String("module", module)}, fields...)
 	logger.Debug(msg, fields...)
 }
 
 func Info(msg string, fields ...Field) {
-	fields = append([]Field{String("module", module)}, fields...)
 	logger.Info(msg, fields...)
 }
 
 func Warn(msg string, fields ...Field) {
-	fields = append([]Field{String("module", module)}, fields...)
 	logger.Warn(msg, fields...)
 }
 
 func Error(msg string, fields ...Field) {
-	fields = append([]Field{String("module", module)}, fields...)
 	logger.Error(msg, fields...)
 }
 
 func Fatal(msg string, fields ...Field) {
-	fields = append([]Field{String("module", module)}, fields...)
 	logger.Fatal(msg, fields...)
 }

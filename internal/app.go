@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"go.uber.org/multierr"
 	"golang.org/x/sync/errgroup"
+	"runtime/debug"
 	"sync"
 )
 
@@ -23,7 +24,8 @@ const module = "aryaframe"
 
 func (app *App) Init() (err error) {
 	app.initOnce.Do(func() {
-		app.servers = make([]server.Server, 2)
+		app.cycle = xcycle.NewCycle()
+		app.servers = make([]server.Server, 0, 2)
 		initdefermanager.RegisterFrameWork(log.Init)
 		initdefermanager.RegisterFrameWork(server.Init)
 		initdefermanager.RegisterFrameWork(client.Init)
@@ -43,6 +45,7 @@ func (app *App) Run() (err error) {
 		}
 	}()
 	app.servers = append(app.servers, server.Servers...)
+	fmt.Println("server len ", len(app.servers))
 
 	app.cycle.Run(app.startServers)
 
@@ -53,12 +56,21 @@ func (app *App) Run() (err error) {
 	}
 	return
 }
+func endProcessingImpl(ctx context.Context) {
+	if p := recover(); p != nil {
+		log.Error("panic", log.String("", fmt.Sprintf("err: %v", p)),
+			log.String("panicMsg", string(debug.Stack())))
+		debug.PrintStack()
+	}
+}
 
 func (app *App) startServers() error {
 	eg, ctx := errgroup.WithContext(context.Background())
 	for _, s := range app.servers {
 		s := s
+		fmt.Println("--------startServers---------")
 		eg.Go(func() (err error) {
+			defer endProcessingImpl(context.Background())
 			err = s.Serve(ctx)
 			return
 		})

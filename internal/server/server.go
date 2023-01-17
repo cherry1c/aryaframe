@@ -46,8 +46,10 @@ func initServer() error {
 	srv := grpc2.NewServer(grpcOption...)
 
 	// init http server
-
+	fmt.Printf("add server successful\n")
 	Servers = append(Servers, srv)
+
+	fmt.Println("server len ", len(Servers))
 	return nil
 }
 

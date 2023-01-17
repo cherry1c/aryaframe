@@ -17,58 +17,51 @@ func NewStringServicesEndpoint(svc service.StringServices) StringServicesEndpoin
 	var nConcatEndpoint endpoint.Endpoint
 	nConcatEndpoint = genConcatEndpoint(svc)
 
-	var nConcatEndpoint endpoint.Endpoint
-	nConcatEndpoint = genDiffEndpoint(svc)
+	var nDiffEndpoint endpoint.Endpoint
+	nDiffEndpoint = genDiffEndpoint(svc)
 
-	var nConcatEndpoint endpoint.Endpoint
-	nConcatEndpoint = genHealtStatusEndpoint(svc)
+	var nHealtStatusEndpoint endpoint.Endpoint
+	nHealtStatusEndpoint = genHealtStatusEndpoint(svc)
 
 	return StringServicesEndpoint{
-		ConcatEndpoint: nConcatEndpoint,
+		ConcatEndpoint:      nConcatEndpoint,
+		DiffEndpoint:        nDiffEndpoint,
+		HealtStatusEndpoint: nHealtStatusEndpoint,
 	}
 }
 
-func (s StringServicesEndpoint) Concat(ctx context.Context, request *bkgrpc.StringRequest, response *bkgrpc.StringResponse) error {
+func (s StringServicesEndpoint) Concat(ctx context.Context, request *bkgrpc.StringRequest) (*bkgrpc.StringResponse, error) {
 	rsp, err := s.ConcatEndpoint(ctx, request)
-	*response = *(rsp.(*bkgrpc.StringResponse))
-	return err
+	return rsp.(*bkgrpc.StringResponse), err
 }
 
-func (s StringServicesEndpoint) Diff(ctx context.Context, request *bkgrpc.StringRequest, response *bkgrpc.StringResponse) error {
+func (s StringServicesEndpoint) Diff(ctx context.Context, request *bkgrpc.StringRequest) (*bkgrpc.StringResponse, error) {
 	rsp, err := s.DiffEndpoint(ctx, request)
-	*response = *(rsp.(*bkgrpc.StringResponse))
-	return err
+	return rsp.(*bkgrpc.StringResponse), err
 }
 
-func (s StringServicesEndpoint) HealtStatus(ctx context.Context, request *bkgrpc.HealthRequest, response *bkgrpc.HealthResponse) error {
+func (s StringServicesEndpoint) HealtStatus(ctx context.Context, request *bkgrpc.HealthRequest) (*bkgrpc.HealthResponse, error) {
 	rsp, err := s.HealtStatusEndpoint(ctx, request)
-	*response = *(rsp.(*bkgrpc.HealthResponse))
-	return err
+	return rsp.(*bkgrpc.HealthResponse), err
 }
 
 func genConcatEndpoint(service service.StringServices) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(*bkgrpc.StringRequest)
-		rsp := &bkgrpc.StringResponse{}
-		err = service.Concat(ctx, req, rsp)
-		return rsp, err
+		return service.Concat(ctx, req)
 	}
 }
 
 func genDiffEndpoint(service service.StringServices) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(*bkgrpc.StringRequest)
-		rsp := &bkgrpc.StringResponse{}
-		err = service.Diff(ctx, req, rsp)
-		return rsp, err
+		return service.Diff(ctx, req)
 	}
 }
 
 func genHealtStatusEndpoint(service service.StringServices) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(*bkgrpc.HealthRequest)
-		rsp := &bkgrpc.HealthResponse{}
-		err = service.HealtStatus(ctx, req, rsp)
-		return rsp, err
+		return service.HealtStatus(ctx, req)
 	}
 }

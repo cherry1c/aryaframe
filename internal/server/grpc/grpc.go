@@ -16,7 +16,9 @@ type Server struct {
 }
 
 func NewServer(opts ...Option) *Server {
-	s := &Server{}
+	s := &Server{
+		network: "tcp",
+	}
 	for _, op := range opts {
 		op(s)
 	}
@@ -37,6 +39,7 @@ func (s *Server) Serve(ctx context.Context) error {
 		fmt.Printf("start grpc failed err: %s\n", err.Error())
 		return err
 	}
+	fmt.Printf("start to server successful\n")
 	select {
 	case <-ctx.Done():
 		return ctx.Err()

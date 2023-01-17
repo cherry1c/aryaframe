@@ -19,6 +19,6 @@ func RegisterService(tOf reflect.Type, vOf reflect.Value, pList []reflect.Value)
 }
 
 func registerServer(s *grpc.Server) {
-	valueOf.Call(paramList)
+	valueOf.Call([]reflect.Value{reflect.ValueOf(s), paramList[0]})
 	fmt.Printf("%s register success.\n", typeOf.Name())
 }

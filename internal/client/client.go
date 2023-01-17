@@ -10,7 +10,7 @@ import (
 const clientConfigPrefix = "aryaframe.client"
 
 func Init() error {
-	if err := conf.UnmarshalKey(clientConfigPrefix, cliConf.Configs); err != nil {
+	if err := conf.UnmarshalKey(clientConfigPrefix, &cliConf.Configs); err != nil {
 		fmt.Printf("unmarshal client config failed err: %s\n", err.Error())
 		return err
 	}

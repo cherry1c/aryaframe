@@ -11,7 +11,7 @@ type StringServices struct {
 }
 
 func init() {
-	grpc.RegisterService("Hello1", reflect.ValueOf(bkgrpc.NewStringServicesClient))
+	grpc.RegisterService("StringServices", reflect.ValueOf(bkgrpc.NewStringServicesClient))
 }
 
 func (T StringServices) Concat(ctx context.Context, request *bkgrpc.StringRequest) (*bkgrpc.StringResponse, error) {

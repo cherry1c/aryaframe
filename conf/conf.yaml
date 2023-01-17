@@ -2,25 +2,18 @@ aryaframe:
   name: aryaframe
   server:
     grpc:
-      address: 192.168.1.3:8050
+      address: 0.0.0.0:9996
     http:
-      address: 192.168.1.3:8080
+      address: 0.0.0.0:9997
     read_timeout: 5
     write_timeout: 5
   service:
     handle_timeout: 5s
 
   client:
-    foo:
-      address: 192.168.1.3:3306
+    StringServices:
+      address: 0.0.0.0:9998
       protocol: grpc
-    foo1:
-      address: 192.168.1.3:3306
-      protocol: grpc
-    foo2:
-      address: 192.168.1.3:3306
-      protocol: grpc
-
 
   mysql:
     locallife:
