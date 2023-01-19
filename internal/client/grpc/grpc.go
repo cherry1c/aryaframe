@@ -53,7 +53,7 @@ func Start() error {
 		service := c.RegisterFunc.Call([]reflect.Value{reflect.ValueOf(con)})[0]
 		c.Service = NewBasicService(c.Name)
 		for i := 0; i < service.NumMethod(); i++ {
-			methodName := service.Method(i).Type().Name()
+			methodName := service.Type().Method(i).Name
 			method := NewBasicMethod(methodName)
 			method.SetMethod(service.Method(i))
 			c.Service.SetMethod(methodName, method)
@@ -68,7 +68,7 @@ func RegisterService(serviceName string, f reflect.Value) {
 }
 
 func Call(s string, m string, ctx context.Context, req interface{}) (interface{}, error) {
-	method, ok := client[s+"Client"].Service.GetMethod(m)
+	method, ok := client[s].Service.GetMethod(m)
 	if !ok {
 		return nil, errors.New("no method")
 	}

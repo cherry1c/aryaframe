@@ -11,20 +11,20 @@ type StringServices struct {
 }
 
 func init() {
-	grpc.RegisterService("StringServices", reflect.ValueOf(bkgrpc.NewStringServicesClient))
+	grpc.RegisterService("stringservices", reflect.ValueOf(bkgrpc.NewStringServicesClient))
 }
 
 func (T StringServices) Concat(ctx context.Context, request *bkgrpc.StringRequest) (*bkgrpc.StringResponse, error) {
-	rsp, err := grpc.Call("StringServices", "Concat", ctx, request)
+	rsp, err := grpc.Call("stringservices", "Concat", ctx, request)
 	return rsp.(*bkgrpc.StringResponse), err
 }
 
 func (T StringServices) Diff(ctx context.Context, request *bkgrpc.StringRequest) (*bkgrpc.StringResponse, error) {
-	rsp, err := grpc.Call("StringServices", "Diff", ctx, request)
+	rsp, err := grpc.Call("stringservices", "Diff", ctx, request)
 	return rsp.(*bkgrpc.StringResponse), err
 }
 
 func (T StringServices) HealtStatus(ctx context.Context, request *bkgrpc.HealthRequest) (*bkgrpc.HealthResponse, error) {
-	rsp, err := grpc.Call("StringServices", "HealtStatus", ctx, request)
+	rsp, err := grpc.Call("stringservices", "HealtStatus", ctx, request)
 	return rsp.(*bkgrpc.HealthResponse), err
 }

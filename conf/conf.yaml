@@ -11,7 +11,7 @@ aryaframe:
     handle_timeout: 5s
 
   client:
-    StringServices:
+    stringservices:
       address: 0.0.0.0:9998
       protocol: grpc
 
